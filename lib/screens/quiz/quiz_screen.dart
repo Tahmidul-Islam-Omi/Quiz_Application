@@ -88,7 +88,14 @@ class _QuizBody extends StatelessWidget {
           _QuestionCard(question: question),
           const SizedBox(height: 20),
           Expanded(child: _Options(quiz: quiz)),
-          const SizedBox(height: 8),
+          if (quiz.isAnswered) ...[
+            _AnswerFeedback(
+              isCorrect: quiz.isCurrentAnswerCorrect,
+              mark: quiz.currentQuestion.mark,
+            ),
+            const SizedBox(height: 12),
+          ] else
+            const SizedBox(height: 8),
           GradientButton(
             label: quiz.isLastQuestion ? 'Finish' : 'Next',
             icon: quiz.isLastQuestion
@@ -213,5 +220,43 @@ class _Options extends StatelessWidget {
       return _letters[index];
     }
     return '${index + 1}';
+  }
+}
+
+/// Banner shown after answering, confirming the result.
+class _AnswerFeedback extends StatelessWidget {
+  final bool isCorrect;
+  final int mark;
+
+  const _AnswerFeedback({required this.isCorrect, required this.mark});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = isCorrect ? AppColors.correct : AppColors.wrong;
+    final IconData icon =
+        isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded;
+    final String message =
+        isCorrect ? 'Correct! +$mark points' : 'Oops! That\'s not right.';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 10),
+          Text(
+            message,
+            style: AppTextStyles.body.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

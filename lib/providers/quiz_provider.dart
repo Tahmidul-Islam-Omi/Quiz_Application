@@ -34,6 +34,10 @@ class QuizProvider extends ChangeNotifier {
   bool get isAnswered => _selectedIndex != null;
   bool get isLastQuestion => _currentIndex == _questions.length - 1;
 
+  /// True when the current question has been answered correctly.
+  bool get isCurrentAnswerCorrect =>
+      isAnswered && currentQuestion.isCorrect(_selectedIndex!);
+
   /// Total marks available across all questions.
   int get totalMarks {
     int total = 0;
