@@ -1,7 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
+import 'providers/auth_provider.dart';
+import 'screens/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,14 +17,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quiz Application',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      home: const Scaffold(
-        body: Center(
-          child: Text('Quiz Application'),
-        ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Quiz Application',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        home: const AuthGate(),
       ),
     );
   }
