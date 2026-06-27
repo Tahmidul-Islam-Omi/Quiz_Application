@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../services/auth_service.dart';
 /// Exposes authentication state and actions to the UI.
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
+  late final StreamSubscription<User?> _authSubscription;
 
   User? _user;
   bool _isLoading = false;
@@ -15,7 +18,8 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({AuthService? authService})
       : _authService = authService ?? AuthService() {
     _user = _authService.currentUser;
-    _authService.authStateChanges.listen(_onAuthStateChanged);
+    _authSubscription =
+        _authService.authStateChanges.listen(_onAuthStateChanged);
   }
 
   User? get user => _user;
@@ -55,5 +59,11 @@ class AuthProvider extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 }

@@ -40,7 +40,7 @@ class ApiService {
           .timeout(const Duration(seconds: 20));
 
       if (response.statusCode != 200) {
-        throw ApiException('Something went wrong. Please try again.');
+        throw const ApiException('Something went wrong. Please try again.');
       }
 
       final Map<String, dynamic> body =
