@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -41,8 +42,10 @@ class ProfileScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Log Out',
-                  style: AppTextStyles.button.copyWith(color: AppColors.wrong)),
+              child: Text(
+                'Log Out',
+                style: AppTextStyles.button.copyWith(color: AppColors.wrong),
+              ),
             ),
           ],
         );
@@ -55,35 +58,38 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final User? user = context.watch<AuthProvider>().user;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _ProfileHeader(
-            name: user?.displayName,
-            email: user?.email,
-            photoUrl: user?.photoURL,
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _InfoTile(
-                  icon: Icons.person_rounded,
-                  label: 'Name',
-                  value: user?.displayName ?? 'Quizzo Player',
-                ),
-                const SizedBox(height: 14),
-                _InfoTile(
-                  icon: Icons.email_rounded,
-                  label: 'Email',
-                  value: user?.email ?? 'Not available',
-                ),
-                const SizedBox(height: 28),
-                _LogoutButton(onPressed: () => _logout(context)),
-              ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        body: Column(
+          children: [
+            _ProfileHeader(
+              name: user?.displayName,
+              email: user?.email,
+              photoUrl: user?.photoURL,
             ),
-          ),
-        ],
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  _InfoTile(
+                    icon: Icons.person_rounded,
+                    label: 'Name',
+                    value: user?.displayName ?? 'Quizzo Player',
+                  ),
+                  const SizedBox(height: 14),
+                  _InfoTile(
+                    icon: Icons.email_rounded,
+                    label: 'Email',
+                    value: user?.email ?? 'Not available',
+                  ),
+                  const SizedBox(height: 28),
+                  _LogoutButton(onPressed: () => _logout(context)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -119,8 +125,10 @@ class _ProfileHeader extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back_rounded,
-                      color: Colors.white),
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
@@ -140,8 +148,9 @@ class _ProfileHeader extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 email ?? '',
-                style: AppTextStyles.caption
-                    .copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
               ),
             ],
           ),
@@ -191,8 +200,9 @@ class _InfoTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(value, style: AppTextStyles.body),

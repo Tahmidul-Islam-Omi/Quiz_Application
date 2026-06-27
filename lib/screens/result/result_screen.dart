@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../core/app_page_route.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/category.dart';
@@ -30,9 +32,9 @@ class ResultScreen extends StatelessWidget {
   }
 
   void _playAgain(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => QuizScreen(category: category)),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(appPageRoute(QuizScreen(category: category)));
   }
 
   void _goHome(BuildContext context) {
@@ -43,49 +45,59 @@ class ResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final _Performance performance = _Performance.fromPercent(_percent);
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                Text(performance.emoji, style: const TextStyle(fontSize: 56)),
-                const SizedBox(height: 12),
-                Text(
-                  performance.title,
-                  style: AppTextStyles.display
-                      .copyWith(color: Colors.white, fontSize: 32),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'on ${category.name}',
-                  style: AppTextStyles.body
-                      .copyWith(color: Colors.white.withValues(alpha: 0.85)),
-                ),
-                const SizedBox(height: 32),
-                _ScoreRing(percent: _percent, score: score, total: totalMarks),
-                const SizedBox(height: 32),
-                _StatsRow(
-                  correctCount: correctCount,
-                  totalQuestions: totalQuestions,
-                  score: score,
-                ),
-                const Spacer(flex: 3),
-                _PrimaryButton(
-                  label: 'Play Again',
-                  icon: Icons.refresh_rounded,
-                  onPressed: () => _playAgain(context),
-                ),
-                const SizedBox(height: 14),
-                _SecondaryButton(
-                  label: 'Back to Home',
-                  onPressed: () => _goHome(context),
-                ),
-                const Spacer(flex: 1),
-              ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const Spacer(flex: 2),
+                  Text(performance.emoji, style: const TextStyle(fontSize: 56)),
+                  const SizedBox(height: 12),
+                  Text(
+                    performance.title,
+                    style: AppTextStyles.display.copyWith(
+                      color: Colors.white,
+                      fontSize: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'on ${category.name}',
+                    style: AppTextStyles.body.copyWith(
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _ScoreRing(
+                    percent: _percent,
+                    score: score,
+                    total: totalMarks,
+                  ),
+                  const SizedBox(height: 32),
+                  _StatsRow(
+                    correctCount: correctCount,
+                    totalQuestions: totalQuestions,
+                    score: score,
+                  ),
+                  const Spacer(flex: 3),
+                  _PrimaryButton(
+                    label: 'Play Again',
+                    icon: Icons.refresh_rounded,
+                    onPressed: () => _playAgain(context),
+                  ),
+                  const SizedBox(height: 14),
+                  _SecondaryButton(
+                    label: 'Back to Home',
+                    onPressed: () => _goHome(context),
+                  ),
+                  const Spacer(flex: 1),
+                ],
+              ),
             ),
           ),
         ),
@@ -130,13 +142,16 @@ class _ScoreRing extends StatelessWidget {
             children: [
               Text(
                 '$percent%',
-                style: AppTextStyles.display
-                    .copyWith(color: Colors.white, fontSize: 44),
+                style: AppTextStyles.display.copyWith(
+                  color: Colors.white,
+                  fontSize: 44,
+                ),
               ),
               Text(
                 '$score / $total pts',
-                style: AppTextStyles.caption
-                    .copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
               ),
             ],
           ),
@@ -209,8 +224,9 @@ class _StatTile extends StatelessWidget {
           Text(value, style: AppTextStyles.title.copyWith(color: Colors.white)),
           Text(
             label,
-            style: AppTextStyles.caption
-                .copyWith(color: Colors.white.withValues(alpha: 0.8)),
+            style: AppTextStyles.caption.copyWith(
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
           ),
         ],
       ),

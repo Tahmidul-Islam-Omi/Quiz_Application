@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/app_page_route.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/view_state.dart';
@@ -32,44 +34,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openCategories() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CategoryScreen()),
-    );
+    Navigator.of(context).push(appPageRoute(const CategoryScreen()));
   }
 
   void _openProfile() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
+    Navigator.of(context).push(appPageRoute(const ProfileScreen()));
   }
 
   void _openQuiz(Category category) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => QuizScreen(category: category)),
-    );
+    Navigator.of(context).push(appPageRoute(QuizScreen(category: category)));
   }
 
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<AuthProvider>().user;
 
-    return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-          children: [
-            _HomeHeader(
-              name: user?.displayName,
-              photoUrl: user?.photoURL,
-              onProfileTap: _openProfile,
-            ),
-            const SizedBox(height: 24),
-            _HeroCard(onBrowse: _openCategories),
-            const SizedBox(height: 28),
-            _SectionHeader(title: 'Popular Topics', onSeeAll: _openCategories),
-            const SizedBox(height: 14),
-            _PopularTopics(onTap: _openQuiz),
-          ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            children: [
+              _HomeHeader(
+                name: user?.displayName,
+                photoUrl: user?.photoURL,
+                onProfileTap: _openProfile,
+              ),
+              const SizedBox(height: 24),
+              _HeroCard(onBrowse: _openCategories),
+              const SizedBox(height: 28),
+              _SectionHeader(
+                title: 'Popular Topics',
+                onSeeAll: _openCategories,
+              ),
+              const SizedBox(height: 14),
+              _PopularTopics(onTap: _openQuiz),
+            ],
+          ),
         ),
       ),
     );
@@ -90,8 +92,9 @@ class _HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String firstName =
-        (name != null && name!.isNotEmpty) ? name!.split(' ').first : 'there';
+    final String firstName = (name != null && name!.isNotEmpty)
+        ? name!.split(' ').first
+        : 'there';
 
     return Row(
       children: [
@@ -160,8 +163,11 @@ class _HeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.rocket_launch_rounded,
-              color: Colors.white, size: 64),
+          const Icon(
+            Icons.rocket_launch_rounded,
+            color: Colors.white,
+            size: 64,
+          ),
         ],
       ),
     );
@@ -181,9 +187,7 @@ class _BrowseButton extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       child: Text(
         'Browse Topics',
@@ -235,9 +239,9 @@ class _PopularTopics extends StatelessWidget {
             provider.state == ViewState.idle) {
           return const SizedBox(
             height: 180,
-            child: Center(child: CircularProgressIndicator(
-              color: AppColors.primary,
-            )),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
           );
         }
 

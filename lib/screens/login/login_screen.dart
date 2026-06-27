@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -49,57 +50,60 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     final bool isLoading = context.watch<AuthProvider>().isLoading;
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-        child: Stack(
-          children: [
-            _FloatingMotifs(controller: _floatController),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 2),
-                    const _HeroBadge(),
-                    const SizedBox(height: 28),
-                    Text(
-                      'Quizzo',
-                      style: AppTextStyles.display.copyWith(
-                        color: Colors.white,
-                        fontSize: 52,
-                        letterSpacing: 0.5,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+          child: Stack(
+            children: [
+              _FloatingMotifs(controller: _floatController),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      const _HeroBadge(),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Quizzo',
+                        style: AppTextStyles.display.copyWith(
+                          color: Colors.white,
+                          fontSize: 52,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Test your knowledge.\nBeat your best score.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.5,
+                      const SizedBox(height: 10),
+                      Text(
+                        'Test your knowledge.\nBeat your best score.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          height: 1.5,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    const _FeaturePills(),
-                    const Spacer(flex: 3),
-                    _GoogleSignInButton(
-                      isLoading: isLoading,
-                      onPressed: _handleSignIn,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Sign in to start playing',
-                      style: AppTextStyles.caption.copyWith(
-                        color: Colors.white.withValues(alpha: 0.75),
+                      const SizedBox(height: 28),
+                      const _FeaturePills(),
+                      const Spacer(flex: 3),
+                      _GoogleSignInButton(
+                        isLoading: isLoading,
+                        onPressed: _handleSignIn,
                       ),
-                    ),
-                    const Spacer(flex: 1),
-                  ],
+                      const SizedBox(height: 18),
+                      Text(
+                        'Sign in to start playing',
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      const Spacer(flex: 1),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -128,7 +132,11 @@ class _HeroBadge extends StatelessWidget {
                 width: 2,
               ),
             ),
-            child: const Icon(Icons.quiz_rounded, color: Colors.white, size: 58),
+            child: const Icon(
+              Icons.quiz_rounded,
+              color: Colors.white,
+              size: 58,
+            ),
           ),
           Positioned(
             top: -8,
@@ -140,8 +148,11 @@ class _HeroBadge extends StatelessWidget {
                 color: AppColors.accent,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.star_rounded,
-                  color: AppColors.textPrimary, size: 16),
+              child: const Icon(
+                Icons.star_rounded,
+                color: AppColors.textPrimary,
+                size: 16,
+              ),
             ),
           ),
         ],

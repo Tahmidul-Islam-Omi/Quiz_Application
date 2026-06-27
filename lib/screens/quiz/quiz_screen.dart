@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/app_page_route.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/view_state.dart';
@@ -45,8 +46,8 @@ class _QuizScreenState extends State<QuizScreen> {
     if (quiz.isLastQuestion) {
       quiz.stopTimer();
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ResultScreen(
+        appPageRoute(
+          ResultScreen(
             category: widget.category,
             score: quiz.score,
             totalMarks: quiz.totalMarks,
@@ -60,25 +61,71 @@ class _QuizScreenState extends State<QuizScreen> {
     quiz.nextQuestion();
   }
 
+  /// Asks the user to confirm before abandoning an in-progress quiz.
+  Future<bool> _confirmExit() async {
+    if (_quiz.state != ViewState.success) {
+      return true;
+    }
+
+    final bool? leave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Leave quiz?', style: AppTextStyles.title),
+          content: Text(
+            'Your progress in this quiz will be lost.',
+            style: AppTextStyles.body,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Stay'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Leave',
+                style: AppTextStyles.button.copyWith(color: AppColors.wrong),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    return leave ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.category.name)),
-      body: Consumer<QuizProvider>(
-        builder: (context, quiz, child) {
-          switch (quiz.state) {
-            case ViewState.loading:
-            case ViewState.idle:
-              return const LoadingView(message: 'Loading questions...');
-            case ViewState.error:
-              return ErrorView(
-                message: quiz.errorMessage,
-                onRetry: () => quiz.loadQuestions(widget.category.id),
-              );
-            case ViewState.success:
-              return _QuizBody(quiz: quiz, onNext: () => _onNext(quiz));
-          }
-        },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
+        final NavigatorState navigator = Navigator.of(context);
+        if (await _confirmExit()) {
+          navigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(widget.category.name)),
+        body: Consumer<QuizProvider>(
+          builder: (context, quiz, child) {
+            switch (quiz.state) {
+              case ViewState.loading:
+              case ViewState.idle:
+                return const LoadingView(message: 'Loading questions...');
+              case ViewState.error:
+                return ErrorView(
+                  message: quiz.errorMessage,
+                  onRetry: () => quiz.loadQuestions(widget.category.id),
+                );
+              case ViewState.success:
+                return _QuizBody(quiz: quiz, onNext: () => _onNext(quiz));
+            }
+          },
+        ),
       ),
     );
   }
@@ -153,8 +200,9 @@ class _ProgressHeader extends StatelessWidget {
           children: [
             Text(
               'Question $current of $total',
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             _TimerPill(secondsLeft: secondsLeft),
           ],
@@ -246,10 +294,10 @@ class _QuestionCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Text(question.question, style: AppTextStyles.heading.copyWith(
-            fontSize: 20,
-            height: 1.3,
-          )),
+          Text(
+            question.question,
+            style: AppTextStyles.heading.copyWith(fontSize: 20, height: 1.3),
+          ),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/app_page_route.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/view_state.dart';
@@ -34,9 +35,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   void _openQuiz(Category category) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => QuizScreen(category: category)),
-    );
+    Navigator.of(context).push(appPageRoute(QuizScreen(category: category)));
   }
 
   @override
