@@ -3,23 +3,24 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// App-wide text styles, built on the Poppins font.
+/// App-wide text styles.
+/// Fredoka (rounded, playful) for branding and headings; Poppins for body.
 class AppTextStyles {
   AppTextStyles._();
 
-  static TextStyle get display => GoogleFonts.poppins(
+  static TextStyle get display => GoogleFonts.fredoka(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get heading => GoogleFonts.poppins(
+  static TextStyle get heading => GoogleFonts.fredoka(
         fontSize: 24,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get title => GoogleFonts.poppins(
+  static TextStyle get title => GoogleFonts.fredoka(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
