@@ -11,6 +11,7 @@ import '../../widgets/error_view.dart';
 import '../../widgets/gradient_button.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/option_tile.dart';
+import '../result/result_screen.dart';
 
 /// Plays through the questions of a single category.
 class QuizScreen extends StatefulWidget {
@@ -42,8 +43,18 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _onNext(QuizProvider quiz) {
     if (quiz.isLastQuestion) {
-      // TODO(step-23): navigate to the Result screen.
-      Navigator.of(context).pop();
+      quiz.stopTimer();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => ResultScreen(
+            category: widget.category,
+            score: quiz.score,
+            totalMarks: quiz.totalMarks,
+            correctCount: quiz.correctCount,
+            totalQuestions: quiz.totalQuestions,
+          ),
+        ),
+      );
       return;
     }
     quiz.nextQuestion();
