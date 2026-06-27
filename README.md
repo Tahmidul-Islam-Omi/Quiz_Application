@@ -18,17 +18,65 @@ Google, browse quiz categories, answer timed questions, and see how you scored.
 
 ---
 
-## 📱 Screens
+## 📱 Screenshots
 
-| Login | Home | Categories |
-|-------|------|------------|
-| ![Login](screenshots/login.png) | ![Home](screenshots/home.png) | ![Categories](screenshots/categories.png) |
+<div align="center">
 
-| Quiz | Result | Profile |
-|------|--------|---------|
-| ![Quiz](screenshots/quiz.png) | ![Result](screenshots/result.png) | ![Profile](screenshots/profile.png) |
+### 🔐 Authentication & Home
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/login.jpg" alt="Login Screen" width="250"/>
+      <br/>
+      <b>Login Screen</b>
+      <br/>
+      <sub>Google Sign-In with animated UI</sub>
+    </td>
+    <td align="center">
+      <img src="screenshots/home.jpg" alt="Home Screen" width="250"/>
+      <br/>
+      <b>Home Dashboard</b>
+      <br/>
+      <sub>Category preview and navigation</sub>
+    </td>
+    <td align="center">
+      <img src="screenshots/profile.jpg" alt="Profile Screen" width="250"/>
+      <br/>
+      <b>Profile Screen</b>
+      <br/>
+      <sub>User info and logout</sub>
+    </td>
+  </tr>
+</table>
 
-> Screenshots live in the `screenshots/` folder.
+### 📚 Quiz Experience
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/categories.jpg" alt="Categories Screen" width="250"/>
+      <br/>
+      <b>Categories</b>
+      <br/>
+      <sub>Browse all quiz topics</sub>
+    </td>
+    <td align="center">
+      <img src="screenshots/quiz.jpg" alt="Quiz Screen" width="250"/>
+      <br/>
+      <b>Quiz Screen</b>
+      <br/>
+      <sub>Timed questions with live countdown</sub>
+    </td>
+    <td align="center">
+      <img src="screenshots/result.jpg" alt="Result Screen" width="250"/>
+      <br/>
+      <b>Result Screen</b>
+      <br/>
+      <sub>Score ring with performance stats</sub>
+    </td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
