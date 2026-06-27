@@ -23,12 +23,21 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  late final QuizProvider _quiz;
+
   @override
   void initState() {
     super.initState();
+    _quiz = context.read<QuizProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<QuizProvider>().loadQuestions(widget.category.id);
+      _quiz.loadQuestions(widget.category.id);
     });
+  }
+
+  @override
+  void dispose() {
+    _quiz.stopTimer();
+    super.dispose();
   }
 
   void _onNext(QuizProvider quiz) {
@@ -83,14 +92,16 @@ class _QuizBody extends StatelessWidget {
           _ProgressHeader(
             current: quiz.currentIndex + 1,
             total: quiz.totalQuestions,
+            secondsLeft: quiz.secondsLeft,
           ),
           const SizedBox(height: 20),
           _QuestionCard(question: question),
           const SizedBox(height: 20),
           Expanded(child: _Options(quiz: quiz)),
-          if (quiz.isAnswered) ...[
+          if (quiz.isLocked) ...[
             _AnswerFeedback(
               isCorrect: quiz.isCurrentAnswerCorrect,
+              timedOut: !quiz.isAnswered,
               mark: quiz.currentQuestion.mark,
             ),
             const SizedBox(height: 12),
@@ -101,7 +112,7 @@ class _QuizBody extends StatelessWidget {
             icon: quiz.isLastQuestion
                 ? Icons.flag_rounded
                 : Icons.arrow_forward_rounded,
-            onPressed: quiz.isAnswered ? onNext : null,
+            onPressed: quiz.isLocked ? onNext : null,
           ),
         ],
       ),
@@ -109,21 +120,33 @@ class _QuizBody extends StatelessWidget {
   }
 }
 
-/// Shows "Question x of N" with a progress bar.
+/// Shows "Question x of N", a countdown pill, and a progress bar.
 class _ProgressHeader extends StatelessWidget {
   final int current;
   final int total;
+  final int secondsLeft;
 
-  const _ProgressHeader({required this.current, required this.total});
+  const _ProgressHeader({
+    required this.current,
+    required this.total,
+    required this.secondsLeft,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Question $current of $total',
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Question $current of $total',
+              style: AppTextStyles.caption
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+            _TimerPill(secondsLeft: secondsLeft),
+          ],
         ),
         const SizedBox(height: 8),
         ClipRRect(
@@ -136,6 +159,41 @@ class _ProgressHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Countdown pill that turns red when time is running low.
+class _TimerPill extends StatelessWidget {
+  final int secondsLeft;
+
+  const _TimerPill({required this.secondsLeft});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isLow = secondsLeft <= 5;
+    final Color color = isLow ? AppColors.wrong : AppColors.primary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_rounded, color: color, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            '${secondsLeft}s',
+            style: AppTextStyles.caption.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -208,8 +266,8 @@ class _Options extends StatelessWidget {
           text: question.options[index],
           isCorrectAnswer: index == question.answerIndex,
           isSelected: index == quiz.selectedIndex,
-          revealed: quiz.isAnswered,
-          onTap: quiz.isAnswered ? null : () => quiz.selectAnswer(index),
+          revealed: quiz.isLocked,
+          onTap: quiz.isLocked ? null : () => quiz.selectAnswer(index),
         );
       },
     );
@@ -223,20 +281,27 @@ class _Options extends StatelessWidget {
   }
 }
 
-/// Banner shown after answering, confirming the result.
+/// Banner shown once a question is resolved, confirming the result.
 class _AnswerFeedback extends StatelessWidget {
   final bool isCorrect;
+  final bool timedOut;
   final int mark;
 
-  const _AnswerFeedback({required this.isCorrect, required this.mark});
+  const _AnswerFeedback({
+    required this.isCorrect,
+    required this.timedOut,
+    required this.mark,
+  });
 
   @override
   Widget build(BuildContext context) {
     final Color color = isCorrect ? AppColors.correct : AppColors.wrong;
-    final IconData icon =
-        isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded;
-    final String message =
-        isCorrect ? 'Correct! +$mark points' : 'Oops! That\'s not right.';
+    final IconData icon = isCorrect
+        ? Icons.check_circle_rounded
+        : (timedOut ? Icons.timer_off_rounded : Icons.cancel_rounded);
+    final String message = isCorrect
+        ? 'Correct! +$mark points'
+        : (timedOut ? 'Time\'s up!' : 'Oops! That\'s not right.');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

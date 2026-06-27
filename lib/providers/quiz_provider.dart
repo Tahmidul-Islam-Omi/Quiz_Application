@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/view_state.dart';
@@ -6,12 +8,15 @@ import '../services/api_exception.dart';
 import '../services/api_service.dart';
 
 /// Manages a single quiz session: loading questions, tracking the
-/// current question, recording answers, and computing the score.
+/// current question, recording answers, the countdown timer, and score.
 class QuizProvider extends ChangeNotifier {
   final ApiService _apiService;
 
   QuizProvider({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
+
+  /// Seconds allowed to answer each question.
+  static const int questionSeconds = 20;
 
   ViewState _state = ViewState.idle;
   List<Question> _questions = [];
@@ -22,17 +27,25 @@ class QuizProvider extends ChangeNotifier {
   int _correctCount = 0;
   int? _selectedIndex;
 
+  int _secondsLeft = questionSeconds;
+  bool _timeUp = false;
+  Timer? _timer;
+
   ViewState get state => _state;
   String get errorMessage => _errorMessage;
   int get currentIndex => _currentIndex;
   int get score => _score;
   int get correctCount => _correctCount;
   int? get selectedIndex => _selectedIndex;
+  int get secondsLeft => _secondsLeft;
 
   int get totalQuestions => _questions.length;
   Question get currentQuestion => _questions[_currentIndex];
   bool get isAnswered => _selectedIndex != null;
   bool get isLastQuestion => _currentIndex == _questions.length - 1;
+
+  /// True once the question is resolved, either by answering or by timeout.
+  bool get isLocked => isAnswered || _timeUp;
 
   /// True when the current question has been answered correctly.
   bool get isCurrentAnswerCorrect =>
@@ -55,6 +68,7 @@ class QuizProvider extends ChangeNotifier {
     try {
       _questions = await _apiService.getQuestions(categoryId);
       _resetProgress();
+      _startTimer();
       _state = ViewState.success;
     } on ApiException catch (error) {
       _errorMessage = error.message;
@@ -67,9 +81,10 @@ class QuizProvider extends ChangeNotifier {
   /// Records the user's choice for the current question.
   /// Selection is locked once made, so the answer cannot be changed.
   void selectAnswer(int optionIndex) {
-    if (isAnswered) {
+    if (isLocked) {
       return;
     }
+    _timer?.cancel();
 
     _selectedIndex = optionIndex;
     if (currentQuestion.isCorrect(optionIndex)) {
@@ -86,13 +101,36 @@ class QuizProvider extends ChangeNotifier {
     }
     _currentIndex++;
     _selectedIndex = null;
+    _startTimer();
     notifyListeners();
   }
 
   /// Restarts the current set of questions from the beginning.
   void restart() {
     _resetProgress();
+    _startTimer();
     notifyListeners();
+  }
+
+  /// Stops the countdown, e.g. when the user leaves the quiz.
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _secondsLeft = questionSeconds;
+    _timeUp = false;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _secondsLeft--;
+      if (_secondsLeft <= 0) {
+        _secondsLeft = 0;
+        _timer?.cancel();
+        _timeUp = true;
+      }
+      notifyListeners();
+    });
   }
 
   void _resetProgress() {
@@ -100,5 +138,13 @@ class QuizProvider extends ChangeNotifier {
     _score = 0;
     _correctCount = 0;
     _selectedIndex = null;
+    _timeUp = false;
+    _secondsLeft = questionSeconds;
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }
