@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/subscription_provider.dart';
 import '../../widgets/user_avatar.dart';
 
-/// Shows the signed-in user's details and a logout action.
+/// Shows the signed-in user's details, the subscription and a logout action.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -54,9 +55,67 @@ class ProfileScreen extends StatelessWidget {
     return result ?? false;
   }
 
+  /// Cancels the subscription, then signs the user out because access ends.
+  Future<void> _unsubscribe(BuildContext context) async {
+    final NavigatorState navigator = Navigator.of(context);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final AuthProvider auth = context.read<AuthProvider>();
+    final SubscriptionProvider subscription = context
+        .read<SubscriptionProvider>();
+
+    final bool confirmed = await _confirmUnsubscribe(context);
+    if (!confirmed) {
+      return;
+    }
+
+    final bool succeeded = await subscription.unsubscribe();
+    if (!succeeded) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(subscription.errorMessage)),
+      );
+      return;
+    }
+
+    subscription.reset();
+    await auth.signOut();
+    navigator.popUntil((route) => route.isFirst);
+  }
+
+  Future<bool> _confirmUnsubscribe(BuildContext context) async {
+    final bool? result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Cancel subscription?', style: AppTextStyles.title),
+          content: Text(
+            'Daily charging will stop and you will lose access to the '
+            'quizzes. You can subscribe again any time.',
+            style: AppTextStyles.body,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Keep It'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Unsubscribe',
+                style: AppTextStyles.button.copyWith(color: AppColors.wrong),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<AuthProvider>().user;
+    final SubscriptionProvider subscription = context
+        .watch<SubscriptionProvider>();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -83,8 +142,27 @@ class ProfileScreen extends StatelessWidget {
                     label: 'Email',
                     value: user?.email ?? 'Not available',
                   ),
+                  const SizedBox(height: 14),
+                  _InfoTile(
+                    icon: Icons.verified_rounded,
+                    label: 'Subscription',
+                    value: '+88 ${subscription.mobileNumber} · Active',
+                  ),
                   const SizedBox(height: 28),
-                  _LogoutButton(onPressed: () => _logout(context)),
+                  _ActionButton(
+                    label: 'Unsubscribe',
+                    icon: Icons.cancel_rounded,
+                    color: AppColors.textSecondary,
+                    isLoading: subscription.isSubmitting,
+                    onPressed: () => _unsubscribe(context),
+                  ),
+                  const SizedBox(height: 14),
+                  _ActionButton(
+                    label: 'Log Out',
+                    icon: Icons.logout_rounded,
+                    color: AppColors.wrong,
+                    onPressed: () => _logout(context),
+                  ),
                 ],
               ),
             ),
@@ -215,11 +293,21 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
-/// Red full-width logout button.
-class _LogoutButton extends StatelessWidget {
+/// Full-width coloured button used for the unsubscribe and logout actions.
+class _ActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isLoading;
   final VoidCallback onPressed;
 
-  const _LogoutButton({required this.onPressed});
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -227,11 +315,21 @@ class _LogoutButton extends StatelessWidget {
       width: double.infinity,
       height: 54,
       child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: const Icon(Icons.logout_rounded, color: Colors.white),
-        label: Text('Log Out', style: AppTextStyles.button),
+        onPressed: isLoading ? null : onPressed,
+        icon: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(icon, color: Colors.white),
+        label: Text(label, style: AppTextStyles.button),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.wrong,
+          backgroundColor: color,
+          disabledBackgroundColor: color.withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
